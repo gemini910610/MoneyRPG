@@ -43,6 +43,11 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <com.gemini910610.moneyrpg.RadarChart
+            android:id="@+id/radar_chart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
         <ImageView
             android:id="@+id/pokemon_image"
             android:layout_width="wrap_content"
@@ -82,7 +87,7 @@
             android:background="#5FC3FF"
             android:fontFamily="@font/pixel"
             android:letterSpacing="0.1"
-            android:onClick="show_dialog"
+            android:onClick="showDialog"
             android:text="@string/boost"
             android:textAllCaps="false"
             android:textColor="#000000"

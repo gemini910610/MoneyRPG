@@ -19,11 +19,15 @@ import java.util.Locale;
 
 class Player
 {
+    public static Player Instance;
+
     private int level, exp, needed_exp, coin, pokemon_id;
     private int str, dex, agi, vit, wis, luc;
 
     public Player()
     {
+        Instance = this;
+
         level = 1;
         exp = 0;
         coin = 1000;
@@ -77,6 +81,7 @@ class Player
 public class MainActivity extends AppCompatActivity
 {
     private TextView exp_text, coin_text;
+    private RadarChart radar_chart;
     private ImageView pokemon_image;
 
     private Player player;
@@ -97,41 +102,43 @@ public class MainActivity extends AppCompatActivity
 
         exp_text = findViewById(R.id.exp_text);
         coin_text = findViewById(R.id.coin_text);
+        radar_chart = findViewById(R.id.radar_chart);
         pokemon_image = findViewById(R.id.pokemon_image);
 
         player = new Player();
-        set_exp_text();
-        set_coin_text();
-        summon_pokemon(player.getPokemonID(), pokemon_image);
+        setExpText();
+        setCoinText();
+        summonPokemon(player.getPokemonID(), pokemon_image);
+        radar_chart.update();
     }
 
-    private void set_exp_text()
+    private void setExpText()
     {
-        String text = string_format("LV. %d (%d/%d)", player.getLevel(), player.getEXP(), player.getNeededExp());
+        String text = stringFormat("LV. %d (%d/%d)", player.getLevel(), player.getEXP(), player.getNeededExp());
         exp_text.setText(text);
     }
 
-    private void set_coin_text()
+    private void setCoinText()
     {
-        String text = string_format("%s: %d", getString(R.string.coin), player.getCoin());
+        String text = stringFormat("%s: %d", getString(R.string.coin), player.getCoin());
         coin_text.setText(text);
     }
 
-    private String string_format(String format, Object... args)
+    private String stringFormat(String format, Object... args)
     {
         return String.format(Locale.getDefault(), format, args);
     }
 
-    private void summon_pokemon(int pokemon_id, ImageView image)
+    private void summonPokemon(int pokemon_id, ImageView image)
     {
-        String pokemon_image_url = string_format("file:///android_asset/pokemon/%d.gif", pokemon_id);
+        String pokemon_image_url = stringFormat("file:///android_asset/pokemon/%d.gif", pokemon_id);
         Glide.with(this).asGif().load(pokemon_image_url).override(Target.SIZE_ORIGINAL).into(image);
     }
 
     public void battle(View view) {
     }
 
-    public void show_dialog(View view) {
+    public void showDialog(View view) {
     }
 
     public void charge(View view) {
