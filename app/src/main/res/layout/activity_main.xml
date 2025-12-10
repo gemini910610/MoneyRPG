@@ -44,7 +44,7 @@
         android:layout_weight="1">
 
         <ImageView
-            android:id="@+id/pokemon"
+            android:id="@+id/pokemon_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -67,6 +67,7 @@
             android:background="#FF5722"
             android:fontFamily="@font/pixel"
             android:letterSpacing="0.1"
+            android:onClick="battle"
             android:text="@string/battle"
             android:textAllCaps="false"
             android:textColor="#000000"
@@ -81,6 +82,7 @@
             android:background="#5FC3FF"
             android:fontFamily="@font/pixel"
             android:letterSpacing="0.1"
+            android:onClick="show_dialog"
             android:text="@string/boost"
             android:textAllCaps="false"
             android:textColor="#000000"
@@ -95,6 +97,7 @@
             android:background="#C35FFF"
             android:fontFamily="@font/pixel"
             android:letterSpacing="0.1"
+            android:onClick="charge"
             android:text="@string/charge"
             android:textAllCaps="false"
             android:textColor="#000000"
