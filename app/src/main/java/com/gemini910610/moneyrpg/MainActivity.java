@@ -21,8 +21,9 @@ class Player
 {
     public static Player Instance;
 
-    private int level, exp, needed_exp, coin, pokemon_id;
+    private int level, exp, needed_exp, coin;
     private int str, dex, agi, vit, wis, luc;
+    private PokeDex.Pokemon pokemon;
 
     public Player()
     {
@@ -31,13 +32,13 @@ class Player
         level = 1;
         exp = 0;
         coin = 1000;
-        pokemon_id = 25;
         str = 3;
         dex = 0;
         agi = 0;
         vit = 3;
         wis = 0;
         luc = 0;
+        pokemon = null;
 
         calculateNeededEXP();
     }
@@ -46,13 +47,13 @@ class Player
     public int getEXP() { return exp; }
     public int getNeededExp() { return needed_exp; }
     public int getCoin() { return coin; }
-    public int getPokemonID() { return pokemon_id; }
     public int getSTR() { return str; }
     public int getDEX() { return dex; }
     public int getAGI() { return agi; }
     public int getVIT() { return vit; }
     public int getWIS() { return wis; }
     public int getLUC() { return luc; }
+    public PokeDex.Pokemon getPokemon() { return pokemon; }
 
     public void setSTR(int str) { this.str = str; }
     public void setDEX(int dex) { this.dex = dex; }
@@ -60,6 +61,7 @@ class Player
     public void setVIT(int vit) { this.vit = vit; }
     public void setWID(int wis) { this.wis = wis; }
     public void setLUC(int luc) { this.luc = luc; }
+    public void setPokemon(PokeDex.Pokemon pokemon) { this.pokemon = pokemon; }
 
     public void calculateNeededEXP()
     {
@@ -105,10 +107,18 @@ public class MainActivity extends AppCompatActivity
         radar_chart = findViewById(R.id.radar_chart);
         pokemon_image = findViewById(R.id.pokemon_image);
 
+        new PokeDex(this);
+
         player = new Player();
         setExpText();
         setCoinText();
-        summonPokemon(player.getPokemonID(), pokemon_image);
+
+        if (player.getPokemon() == null)
+        {
+            player.setPokemon(PokeDex.randomPokemon());
+        }
+        summonPokemon(player.getPokemon(), pokemon_image);
+
         radar_chart.update();
     }
 
@@ -124,14 +134,14 @@ public class MainActivity extends AppCompatActivity
         coin_text.setText(text);
     }
 
-    private String stringFormat(String format, Object... args)
+    public static String stringFormat(String format, Object... args)
     {
         return String.format(Locale.getDefault(), format, args);
     }
 
-    private void summonPokemon(int pokemon_id, ImageView image)
+    private void summonPokemon(PokeDex.Pokemon pokemon, ImageView image)
     {
-        String pokemon_image_url = stringFormat("file:///android_asset/pokemon/%d.gif", pokemon_id);
+        String pokemon_image_url = stringFormat("file:///android_asset/pokemon/%d.gif", pokemon.id);
         Glide.with(this).asGif().load(pokemon_image_url).override(Target.SIZE_ORIGINAL).into(image);
     }
 
