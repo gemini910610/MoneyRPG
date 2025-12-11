@@ -1,9 +1,11 @@
 package com.gemini910610.moneyrpg;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,7 +19,9 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.Target;
 
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 class Player
 {
@@ -26,6 +30,7 @@ class Player
     private int level, exp, needed_exp, coin;
     private int str, dex, agi, vit, wis, luc;
     private PokeDex.Pokemon pokemon;
+    private final ArrayList<Integer> pokemon_box = new ArrayList<>();
 
     private final SharedPreferences preferences;
 
@@ -48,6 +53,7 @@ class Player
     public int getWIS() { return wis; }
     public int getLUC() { return luc; }
     public PokeDex.Pokemon getPokemon() { return pokemon; }
+    public ArrayList<Integer> getPokemonBox() { return pokemon_box; }
 
     public void setSTR(int str) { this.str = str; }
     public void setDEX(int dex) { this.dex = dex; }
@@ -71,6 +77,26 @@ class Player
     public void gainCoin(int coin)
     {
         this.coin += coin;
+    }
+
+    public void gotchaPokemon(PokeDex.Pokemon pokemon)
+    {
+        int id = pokemon.id;
+
+        // if pokemon is not basic pokemon, get its basic pokemon
+        while (!PokeDex.Instance.basic_pokemons.contains(id))
+        {
+            id--;
+        }
+
+        if (!pokemon_box.contains(id))
+        {
+            pokemon_box.add(pokemon.id);
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean(String.valueOf(id), true);
+            editor.apply();
+        }
     }
 
     public void save()
@@ -104,6 +130,14 @@ class Player
         luc = preferences.getInt("LUC", 0);
 
         calculateNeededEXP();
+
+        for (int id = 1; id <= PokeDex.Instance.pokemon_count; id++)
+        {
+            if (preferences.getBoolean(String.valueOf(id), false))
+            {
+                pokemon_box.add(id);
+            }
+        }
     }
 
     public void reset()
@@ -113,6 +147,41 @@ class Player
         editor.apply();
 
         load();
+    }
+}
+
+class SelectPokemonDialog extends Dialog
+{
+    public SelectPokemonDialog(Context context, Consumer<Integer> onSelected)
+    {
+        super(context);
+        setContentView(R.layout.dialog_select_pokemon);
+
+        ImageView pokemon_1 = findViewById(R.id.pokemon_1);
+        ImageView pokemon_2 = findViewById(R.id.pokemon_2);
+        ImageView pokemon_3 = findViewById(R.id.pokemon_3);
+
+        Window window = getWindow();
+        assert window != null;
+        window.setBackgroundDrawableResource(R.drawable.rounded_corner_background);
+        setCancelable(false);
+
+        MainActivity.summonPokemon(new PokeDex.Pokemon(1), pokemon_1);
+        MainActivity.summonPokemon(new PokeDex.Pokemon(4), pokemon_2);
+        MainActivity.summonPokemon(new PokeDex.Pokemon(7), pokemon_3);
+
+        pokemon_1.setOnClickListener(view -> {
+            onSelected.accept(1);
+            dismiss();
+        });
+        pokemon_2.setOnClickListener(view -> {
+            onSelected.accept(4);
+            dismiss();
+        });
+        pokemon_3.setOnClickListener(view -> {
+            onSelected.accept(7);
+            dismiss();
+        });
     }
 }
 
@@ -151,9 +220,18 @@ public class MainActivity extends AppCompatActivity
 
         if (player.getPokemon() == null)
         {
-            player.setPokemon(PokeDex.randomPokemon());
+            SelectPokemonDialog dialog = new SelectPokemonDialog(this, id -> {
+                PokeDex.Pokemon pokemon = new PokeDex.Pokemon(id);
+                player.gotchaPokemon(pokemon);
+                player.setPokemon(pokemon);
+                summonPokemon(pokemon, pokemon_image);
+            });
+            dialog.show();
         }
-        summonPokemon(player.getPokemon(), pokemon_image);
+        else
+        {
+            summonPokemon(player.getPokemon(), pokemon_image);
+        }
 
         radar_chart.update();
     }
@@ -175,10 +253,10 @@ public class MainActivity extends AppCompatActivity
         return String.format(Locale.getDefault(), format, args);
     }
 
-    private void summonPokemon(PokeDex.Pokemon pokemon, ImageView image)
+    public static void summonPokemon(PokeDex.Pokemon pokemon, ImageView image)
     {
         String pokemon_image_url = stringFormat("file:///android_asset/pokemon/%d.gif", pokemon.id);
-        Glide.with(this).asGif().load(pokemon_image_url).override(Target.SIZE_ORIGINAL).into(image);
+        Glide.with(image.getContext()).asGif().load(pokemon_image_url).override(Target.SIZE_ORIGINAL).into(image);
     }
 
     public void battle(View view) {

@@ -13,7 +13,8 @@ public class PokeDex
     public static PokeDex Instance;
 
     public SQLiteDatabase database;
-    ArrayList<Integer> basic_pokemons = new ArrayList<>();
+    public ArrayList<Integer> basic_pokemons = new ArrayList<>();
+    public int pokemon_count;
 
     public PokeDex(Context context)
     {
@@ -33,7 +34,7 @@ public class PokeDex
 
         cursor = database.rawQuery("select count(*) from pokemon", null);
         cursor.moveToFirst();
-        int pokemon_count = cursor.getInt(0);
+        pokemon_count = cursor.getInt(0);
         cursor.close();
     }
 
@@ -65,10 +66,10 @@ public class PokeDex
         }
     }
 
-    public static Pokemon randomPokemon()
+    public static Pokemon randomPokemon(ArrayList<Integer> pokemons)
     {
-        int index = (int)(Math.random() * Instance.basic_pokemons.size());
-        int id = Instance.basic_pokemons.get(index);
+        int index = (int)(Math.random() * pokemons.size());
+        int id = pokemons.get(index);
         Pokemon pokemon = new Pokemon(id);
 
         while (Player.Instance.getLevel() >= pokemon.evolution_level)

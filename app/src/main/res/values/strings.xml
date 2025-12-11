@@ -4,4 +4,5 @@
     <string name="boost">boost</string>
     <string name="charge">charge</string>
     <string name="coin">coin</string>
+    <string name="select_pokemon_message">please select your pokemon</string>
 </resources>
