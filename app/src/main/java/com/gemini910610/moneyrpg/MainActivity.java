@@ -1,5 +1,7 @@
 package com.gemini910610.moneyrpg;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,22 +27,14 @@ class Player
     private int str, dex, agi, vit, wis, luc;
     private PokeDex.Pokemon pokemon;
 
-    public Player()
+    private final SharedPreferences preferences;
+
+    public Player(Context context)
     {
         Instance = this;
 
-        level = 1;
-        exp = 0;
-        coin = 1000;
-        str = 3;
-        dex = 0;
-        agi = 0;
-        vit = 3;
-        wis = 0;
-        luc = 0;
-        pokemon = null;
-
-        calculateNeededEXP();
+        preferences = context.getSharedPreferences("player", Context.MODE_PRIVATE);
+        load();
     }
 
     public int getLevel() { return level; }
@@ -78,6 +72,48 @@ class Player
     {
         this.coin += coin;
     }
+
+    public void save()
+    {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("level", level);
+        editor.putInt("exp", exp);
+        editor.putInt("coin", coin);
+        editor.putInt("pokemon_id", pokemon.id);
+        editor.putInt("STR", str);
+        editor.putInt("DEX", dex);
+        editor.putInt("AGI", agi);
+        editor.putInt("VIT", vit);
+        editor.putInt("WIS", wis);
+        editor.putInt("LUC", luc);
+        editor.apply();
+    }
+
+    public void load()
+    {
+        level = preferences.getInt("level", 1);
+        exp = preferences.getInt("exp", 0);
+        coin = preferences.getInt("coin", 1000);
+        int pokemon_id = preferences.getInt("pokemon_id", -1);
+        pokemon = pokemon_id == -1 ? null : new PokeDex.Pokemon(pokemon_id);
+        str = preferences.getInt("STR", 3);
+        dex = preferences.getInt("DEX", 0);
+        agi = preferences.getInt("AGI", 0);
+        vit = preferences.getInt("VIT", 3);
+        wis = preferences.getInt("WIS", 0);
+        luc = preferences.getInt("LUC", 0);
+
+        calculateNeededEXP();
+    }
+
+    public void reset()
+    {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+
+        load();
+    }
 }
 
 public class MainActivity extends AppCompatActivity
@@ -109,7 +145,7 @@ public class MainActivity extends AppCompatActivity
 
         new PokeDex(this);
 
-        player = new Player();
+        player = new Player(this);
         setExpText();
         setCoinText();
 
@@ -152,5 +188,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void charge(View view) {
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        player.save();
     }
 }
