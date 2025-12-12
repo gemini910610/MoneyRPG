@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/reset_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/reset"
+            android:textAllCaps="false"
+            android:textSize="20sp"/>
+
+        <Button
+            android:id="@+id/random_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/random"
+            android:textAllCaps="false"
+            android:textSize="20sp"/>
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/str_boost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:gravity="center_vertical"
+            android:letterSpacing="0.1"
+            android:paddingStart="10dp"
+            android:paddingEnd="0dp"
+            android:text="@string/str"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/default_price"
+            android:textSize="20sp"/>
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/dex_boost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:gravity="center_vertical"
+            android:letterSpacing="0.1"
+            android:paddingStart="10dp"
+            android:paddingEnd="0dp"
+            android:text="@string/dex"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/default_price"
+            android:textSize="20sp"/>
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/agi_boost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:gravity="center_vertical"
+            android:letterSpacing="0.1"
+            android:paddingStart="10dp"
+            android:paddingEnd="0dp"
+            android:text="@string/agi"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/default_price"
+            android:textSize="20sp"/>
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/vit_boost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:gravity="center_vertical"
+            android:letterSpacing="0.1"
+            android:paddingStart="10dp"
+            android:paddingEnd="0dp"
+            android:text="@string/vit"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/default_price"
+            android:textSize="20sp"/>
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/wis_boost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:gravity="center_vertical"
+            android:letterSpacing="0.1"
+            android:paddingStart="10dp"
+            android:paddingEnd="0dp"
+            android:text="@string/wis"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/default_price"
+            android:textSize="20sp"/>
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/luc_boost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:gravity="center_vertical"
+            android:letterSpacing="0.1"
+            android:paddingStart="10dp"
+            android:paddingEnd="0dp"
+            android:text="@string/luc"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pixel"
+            android:letterSpacing="0.1"
+            android:text="@string/default_price"
+            android:textSize="20sp"/>
+
+    </TableRow>
+
+</TableLayout>

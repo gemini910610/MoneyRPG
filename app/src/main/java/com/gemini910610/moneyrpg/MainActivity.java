@@ -2,11 +2,14 @@ package com.gemini910610.moneyrpg;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -18,14 +21,19 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 class Player
 {
-    public static Player Instance;
+    private static Player Instance;
 
     private int level, exp, needed_exp, coin;
     private int str, dex, agi, vit, wis, luc;
@@ -42,111 +50,169 @@ class Player
         load();
     }
 
-    public int getLevel() { return level; }
-    public int getEXP() { return exp; }
-    public int getNeededExp() { return needed_exp; }
-    public int getCoin() { return coin; }
-    public int getSTR() { return str; }
-    public int getDEX() { return dex; }
-    public int getAGI() { return agi; }
-    public int getVIT() { return vit; }
-    public int getWIS() { return wis; }
-    public int getLUC() { return luc; }
-    public PokeDex.Pokemon getPokemon() { return pokemon; }
-    public ArrayList<Integer> getPokemonBox() { return pokemon_box; }
-
-    public void setSTR(int str) { this.str = str; }
-    public void setDEX(int dex) { this.dex = dex; }
-    public void setAGI(int agi) { this.agi = agi; }
-    public void setVIT(int vit) { this.vit = vit; }
-    public void setWID(int wis) { this.wis = wis; }
-    public void setLUC(int luc) { this.luc = luc; }
-    public void setPokemon(PokeDex.Pokemon pokemon) { this.pokemon = pokemon; }
-
-    public void calculateNeededEXP()
+    public static int getLevel() { return Instance.level; }
+    public static int getEXP() { return Instance.exp; }
+    public static int getNeededExp() { return Instance.needed_exp; }
+    public static int getCoin() { return Instance.coin; }
+    public static int getSTR() { return Instance.str; }
+    public static int getDEX() { return Instance.dex; }
+    public static int getAGI() { return Instance.agi; }
+    public static int getVIT() { return Instance.vit; }
+    public static int getWIS() { return Instance.wis; }
+    public static int getLUC() { return Instance.luc; }
+    public static int getAbility(String ability)
     {
-        needed_exp = (int)Math.pow(3 * level * level, 0.75);
+        switch (ability)
+        {
+            case "STR":
+                return getSTR();
+            case "DEX":
+                return getDEX();
+            case "AGI":
+                return getAGI();
+            case "VIT":
+                return getVIT();
+            case "WIS":
+                return getWIS();
+            case "LUC":
+                return getLUC();
+        }
+        return 0;
+    }
+    public static PokeDex.Pokemon getPokemon() { return Instance.pokemon; }
+    public static ArrayList<Integer> getPokemonBox() { return Instance.pokemon_box; }
+
+    public static void setSTR(int str) { Instance.str = str; }
+    public static void setDEX(int dex) { Instance.dex = dex; }
+    public static void setAGI(int agi) { Instance.agi = agi; }
+    public static void setVIT(int vit) { Instance.vit = vit; }
+    public static void setWIS(int wis) { Instance.wis = wis; }
+    public static void setLUC(int luc) { Instance.luc = luc; }
+    public static void setAbility(String ability, int value)
+    {
+        switch (ability)
+        {
+            case "STR":
+                setSTR(value);
+                break;
+            case "DEX":
+                setDEX(value);
+                break;
+            case "AGI":
+                setAGI(value);
+                break;
+            case "VIT":
+                setVIT(value);
+                break;
+            case "WIS":
+                setWIS(value);
+                break;
+            case "LUC":
+                setLUC(value);
+                break;
+        }
+    }
+    public static void setPokemon(PokeDex.Pokemon pokemon) { Instance.pokemon = pokemon; }
+
+    private void calculateNeededEXP()
+    {
+        needed_exp = (int) Math.pow(3 * level * level, 0.75);
     }
 
-    public void gainEXP(int exp)
+    public static void gainEXP(int exp)
     {
-        this.exp += exp;
+        Instance.exp += exp;
         // check level up or evolution
     }
 
-    public void gainCoin(int coin)
+    public static void gainCoin(int coin)
     {
-        this.coin += coin;
+        Instance.coin += coin;
     }
 
-    public void gotchaPokemon(PokeDex.Pokemon pokemon)
+    public static void gotchaPokemon(PokeDex.Pokemon pokemon)
     {
         int id = pokemon.id;
 
         // if pokemon is not basic pokemon, get its basic pokemon
-        while (!PokeDex.Instance.basic_pokemons.contains(id))
+        while (!PokeDex.getBasicPokemons().contains(id))
         {
             id--;
         }
 
-        if (!pokemon_box.contains(id))
+        if (!Instance.pokemon_box.contains(id))
         {
-            pokemon_box.add(pokemon.id);
+            Instance.pokemon_box.add(id);
 
-            SharedPreferences.Editor editor = preferences.edit();
+            SharedPreferences.Editor editor = Instance.preferences.edit();
             editor.putBoolean(String.valueOf(id), true);
             editor.apply();
         }
     }
 
-    public void save()
+    public static void save()
     {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("level", level);
-        editor.putInt("exp", exp);
-        editor.putInt("coin", coin);
-        editor.putInt("pokemon_id", pokemon.id);
-        editor.putInt("STR", str);
-        editor.putInt("DEX", dex);
-        editor.putInt("AGI", agi);
-        editor.putInt("VIT", vit);
-        editor.putInt("WIS", wis);
-        editor.putInt("LUC", luc);
+        SharedPreferences.Editor editor = Instance.preferences.edit();
+        editor.putInt("level", Instance.level);
+        editor.putInt("exp", Instance.exp);
+        editor.putInt("coin", Instance.coin);
+        PokeDex.Pokemon pokemon = Instance.pokemon;
+        editor.putInt("pokemon_id", pokemon == null ? -1 : pokemon.id);
+        editor.putInt("STR", Instance.str);
+        editor.putInt("DEX", Instance.dex);
+        editor.putInt("AGI", Instance.agi);
+        editor.putInt("VIT", Instance.vit);
+        editor.putInt("WIS", Instance.wis);
+        editor.putInt("LUC", Instance.luc);
         editor.apply();
     }
 
-    public void load()
+    public static void load()
     {
-        level = preferences.getInt("level", 1);
-        exp = preferences.getInt("exp", 0);
-        coin = preferences.getInt("coin", 1000);
-        int pokemon_id = preferences.getInt("pokemon_id", -1);
-        pokemon = pokemon_id == -1 ? null : new PokeDex.Pokemon(pokemon_id);
-        str = preferences.getInt("STR", 3);
-        dex = preferences.getInt("DEX", 0);
-        agi = preferences.getInt("AGI", 0);
-        vit = preferences.getInt("VIT", 3);
-        wis = preferences.getInt("WIS", 0);
-        luc = preferences.getInt("LUC", 0);
+        Instance.level = Instance.preferences.getInt("level", 1);
+        Instance.exp = Instance.preferences.getInt("exp", 0);
+        Instance.coin = Instance.preferences.getInt("coin", 1000);
+        int pokemon_id = Instance.preferences.getInt("pokemon_id", -1);
+        Instance.pokemon = pokemon_id == -1 ? null : new PokeDex.Pokemon(pokemon_id);
+        Instance.str = Instance.preferences.getInt("STR", 3);
+        Instance.dex = Instance.preferences.getInt("DEX", 0);
+        Instance.agi = Instance.preferences.getInt("AGI", 0);
+        Instance.vit = Instance.preferences.getInt("VIT", 3);
+        Instance.wis = Instance.preferences.getInt("WIS", 0);
+        Instance.luc = Instance.preferences.getInt("LUC", 0);
 
-        calculateNeededEXP();
+        Instance.calculateNeededEXP();
 
-        for (int id = 1; id <= PokeDex.Instance.pokemon_count; id++)
+        Instance.pokemon_box.clear();
+        for (int id = 1; id <= PokeDex.getPokemonCount(); id++)
         {
-            if (preferences.getBoolean(String.valueOf(id), false))
+            if (Instance.preferences.getBoolean(String.valueOf(id), false))
             {
-                pokemon_box.add(id);
+                Instance.pokemon_box.add(id);
             }
         }
     }
 
-    public void reset()
+    public static void resetAll()
     {
-        SharedPreferences.Editor editor = preferences.edit();
+        SharedPreferences.Editor editor = Instance.preferences.edit();
         editor.clear();
-        editor.apply();
+        editor.commit();
 
         load();
+    }
+
+    public static void resetKeepBoxOnly()
+    {
+        ArrayList<Integer> pokemon_box = new ArrayList<>(getPokemonBox());
+
+        resetAll();
+
+        for (int id: pokemon_box)
+        {
+            PokeDex.Pokemon pokemon = new PokeDex.Pokemon(id);
+            gotchaPokemon(pokemon);
+        }
     }
 }
 
@@ -161,8 +227,7 @@ class SelectPokemonDialog extends Dialog
         ImageView pokemon_2 = findViewById(R.id.pokemon_2);
         ImageView pokemon_3 = findViewById(R.id.pokemon_3);
 
-        Window window = getWindow();
-        assert window != null;
+        Window window = Objects.requireNonNull(getWindow());
         window.setBackgroundDrawableResource(R.drawable.rounded_corner_background);
         setCancelable(false);
 
@@ -185,13 +250,159 @@ class SelectPokemonDialog extends Dialog
     }
 }
 
+class ResetCheckDialog extends Dialog
+{
+    public ResetCheckDialog(Context context, Runnable onReset)
+    {
+        super(context);
+        setContentView(R.layout.dialog_check);
+
+        TextView message = findViewById(R.id.message);
+        Button cancel_button = findViewById(R.id.cancel_button);
+        Button ok_button = findViewById(R.id.ok_button);
+
+        Window window = Objects.requireNonNull(getWindow());
+        window.setBackgroundDrawableResource(R.drawable.rounded_corner_background);
+
+        message.setText(R.string.check_reset);
+        cancel_button.setOnClickListener(view -> cancel());
+        ok_button.setOnClickListener(view -> {
+            Player.resetAll();
+            dismiss();
+            onReset.run();
+        });
+    }
+}
+
+class RandomCheckDialog extends Dialog
+{
+    public RandomCheckDialog(Context context, Runnable onReset)
+    {
+        super(context);
+        setContentView(R.layout.dialog_check);
+
+        TextView message = findViewById(R.id.message);
+        Button cancel_button = findViewById(R.id.cancel_button);
+        Button ok_button = findViewById(R.id.ok_button);
+
+        Window window = Objects.requireNonNull(getWindow());
+        window.setBackgroundDrawableResource(R.drawable.rounded_corner_background);
+
+        message.setText(R.string.check_random);
+        cancel_button.setOnClickListener(view -> cancel());
+        ok_button.setOnClickListener(view -> {
+            Player.resetKeepBoxOnly();
+//            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(Player.getPokemonBox());
+            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(PokeDex.getBasicPokemons());
+            Player.setPokemon(pokemon);
+            Player.save();
+            dismiss();
+            onReset.run();
+        });
+    }
+}
+
+class BoostDialog extends BottomSheetDialog
+{
+    private final Button random_button;
+    private final Map<String, Button> boost_buttons = new Hashtable<>();
+
+    private final Map<String, Integer> max_value;
+
+    public BoostDialog(Context context, Map<String, Integer> max_value, Runnable onCanceled, BiConsumer<TextView, String> onItemClicked, Runnable onReset)
+    {
+        super(context);
+        setContentView(R.layout.dialog_boost);
+        setOnCancelListener(dialog -> onCanceled.run());
+
+        Button reset_button = Objects.requireNonNull(findViewById(R.id.reset_button));
+        random_button = Objects.requireNonNull(findViewById(R.id.random_button));
+
+        this.max_value = max_value;
+
+        Map<String, Integer> ability_view_ids = Map.of(
+                "STR", R.id.str_boost,
+                "DEX", R.id.dex_boost,
+                "AGI", R.id.agi_boost,
+                "VIT", R.id.vit_boost,
+                "WIS", R.id.wis_boost,
+                "LUC", R.id.luc_boost
+        );
+
+        for (String ability:ability_view_ids.keySet())
+        {
+            int view_id = Objects.requireNonNull(ability_view_ids.get(ability));
+            TableRow row = Objects.requireNonNull(findViewById(view_id));
+            TextView text_view = (TextView) row.getChildAt(0);
+            Button button = (Button) row.getChildAt(1);
+
+            text_view.setText(MainActivity.stringFormat("%s(%d)", ability, Player.getAbility(ability)));
+            button.setOnClickListener(view -> onItemClicked.accept(text_view, ability));
+            boost_buttons.put(ability, button);
+        }
+
+        reset_button.setOnClickListener(view -> {
+            ResetCheckDialog dialog = new ResetCheckDialog(context, () -> {
+                dismiss();
+                onReset.run();
+            });
+            dialog.show();
+        });
+
+        random_button.setOnClickListener(view -> {
+            RandomCheckDialog dialog = new RandomCheckDialog(context, () -> {
+                dismiss();
+                onReset.run();
+            });
+            dialog.show();
+        });
+
+        setupBoostButton();
+    }
+
+    public void setupBoostButton()
+    {
+        int coin = Player.getCoin();
+
+        for (Map.Entry<String, Integer> entry: max_value.entrySet())
+        {
+            String ability = entry.getKey();
+            int max_value = entry.getValue();
+
+            int value = Player.getAbility(ability);
+            int cost = calculateCost(ability, value);
+
+            Button boost_button = Objects.requireNonNull(boost_buttons.get(ability));
+            boost_button.setText(MainActivity.stringFormat("+($%d)", cost));
+            boost_button.setEnabled(coin >= cost && value < max_value);
+        }
+
+        random_button.setEnabled(coin >= 500 && Player.getLevel() >= 10 && Player.getPokemonBox().size() > 1);
+    }
+
+    public int calculateCost(String ability, int current_value)
+    {
+        switch (ability)
+        {
+            case "STR":
+            case "VIT":
+                return (current_value + 1) * 50;
+            case "DEX":
+            case "AGI":
+                return (current_value + 1) * 75;
+            case "WIS":
+            case "LUC":
+                return (current_value + 1) * 100;
+        }
+        return 0;
+    }
+}
+
 public class MainActivity extends AppCompatActivity
 {
     private TextView exp_text, coin_text;
-    private RadarChart radar_chart;
     private ImageView pokemon_image;
-
-    private Player player;
+    private BoostDialog boost_dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -209,42 +420,54 @@ public class MainActivity extends AppCompatActivity
 
         exp_text = findViewById(R.id.exp_text);
         coin_text = findViewById(R.id.coin_text);
-        radar_chart = findViewById(R.id.radar_chart);
+        RadarChart radar_chart = findViewById(R.id.radar_chart);
         pokemon_image = findViewById(R.id.pokemon_image);
 
-        new PokeDex(this);
+        Map<String, Integer> max_value = Map.of(
+                "STR", 100,
+                "DEX", 50,
+                "AGI", 50,
+                "VIT", 100,
+                "WIS", 20,
+                "LUC", 20
+        );
+        radar_chart.setMaxValue(max_value);
 
-        player = new Player(this);
+        new PokeDex(this);
+        new Player(this);
+
         setExpText();
         setCoinText();
 
-        if (player.getPokemon() == null)
+        if (Player.getPokemon() == null)
         {
             SelectPokemonDialog dialog = new SelectPokemonDialog(this, id -> {
                 PokeDex.Pokemon pokemon = new PokeDex.Pokemon(id);
-                player.gotchaPokemon(pokemon);
-                player.setPokemon(pokemon);
+                Player.gotchaPokemon(pokemon);
+                Player.setPokemon(pokemon);
                 summonPokemon(pokemon, pokemon_image);
             });
             dialog.show();
         }
         else
         {
-            summonPokemon(player.getPokemon(), pokemon_image);
+            summonPokemon(Player.getPokemon(), pokemon_image);
         }
 
         radar_chart.update();
+
+        boost_dialog = new BoostDialog(this, max_value, radar_chart::update, this::boostAbility, this::restart);
     }
 
     private void setExpText()
     {
-        String text = stringFormat("LV. %d (%d/%d)", player.getLevel(), player.getEXP(), player.getNeededExp());
+        String text = stringFormat("LV. %d (%d/%d)", Player.getLevel(), Player.getEXP(), Player.getNeededExp());
         exp_text.setText(text);
     }
 
     private void setCoinText()
     {
-        String text = stringFormat("%s: %d", getString(R.string.coin), player.getCoin());
+        String text = stringFormat("%s: %d", getString(R.string.coin), Player.getCoin());
         coin_text.setText(text);
     }
 
@@ -259,18 +482,42 @@ public class MainActivity extends AppCompatActivity
         Glide.with(image.getContext()).asGif().load(pokemon_image_url).override(Target.SIZE_ORIGINAL).into(image);
     }
 
-    public void battle(View view) {
+    private void boostAbility(TextView text_view, String ability)
+    {
+        int value = Player.getAbility(ability);
+        int cost = boost_dialog.calculateCost(ability, value);
+        Player.setAbility(ability, value + 1);
+
+        text_view.setText(stringFormat("%s(%d)", ability, value + 1));
+        Player.gainCoin(-cost);
+        setCoinText();
+        boost_dialog.setupBoostButton();
     }
 
-    public void showDialog(View view) {
+    public void restart()
+    {
+        Intent intent = new Intent(this, MainActivity.class);
+        finish();
+        startActivity(intent);
     }
 
-    public void charge(View view) {
+    public void battle(View view)
+    {
+    }
+
+    public void showBoostDialog(View view)
+    {
+        boost_dialog.show();
+    }
+
+    public void charge(View view)
+    {
     }
 
     @Override
-    protected void onStop() {
+    protected void onStop()
+    {
         super.onStop();
-        player.save();
+        Player.save();
     }
 }

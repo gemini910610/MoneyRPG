@@ -6,16 +6,22 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class RadarChart extends View
 {
     Paint radar_paint, radar_border_paint, value_paint, value_border_paint, text_paint;
     private final float[] angle_90, angle_150, angle_210, angle_270, angle_330, angle_30;
-    private final int[] max_data = {100, 50, 50, 100, 20, 20};
-    private final int[] data = {0, 0, 0, 0, 0, 0};
+    private Map<String, Integer> max_value = new Hashtable<>();
+    private final Map<String, Integer> data = new Hashtable<>();
 
     public RadarChart(Context context, AttributeSet attributes)
     {
@@ -74,7 +80,7 @@ public class RadarChart extends View
     private float[] getUnitVector(int angle)
     {
         double radian = angle / 180.0 * Math.PI;
-        return new float[]{(float)Math.cos(radian), -(float)Math.sin(radian)};
+        return new float[]{(float) Math.cos(radian), -(float) Math.sin(radian)};
     }
 
     private void drawRadar(Canvas canvas)
@@ -121,13 +127,32 @@ public class RadarChart extends View
     {
         float radius = getWidth() * 0.5f;
 
+        List<Pair<String, float[]>> ability_angles = List.of(
+                new Pair<>("STR", angle_90),
+                new Pair<>("DEX", angle_30),
+                new Pair<>("AGI", angle_330),
+                new Pair<>("VIT", angle_270),
+                new Pair<>("WIS", angle_210),
+                new Pair<>("LUC", angle_150)
+        );
+
         Path path = new Path();
-        moveToPolar(path, radius * data[0] / max_data[0], angle_90);
-        lineToPolar(path, radius * data[1] / max_data[1], angle_30);
-        lineToPolar(path, radius * data[2] / max_data[2], angle_330);
-        lineToPolar(path, radius * data[3] / max_data[3], angle_270);
-        lineToPolar(path, radius * data[4] / max_data[4], angle_210);
-        lineToPolar(path, radius * data[5] / max_data[5], angle_150);
+        for (Pair<String, float[]> pair: ability_angles)
+        {
+            String ability = pair.first;
+            float[] angle = pair.second;
+
+            int value = Objects.requireNonNull(data.getOrDefault(ability, 0));
+            int max_value = Objects.requireNonNull(this.max_value.getOrDefault(ability, 100));
+            if (ability.equals("STR"))
+            {
+                moveToPolar(path, radius * value / max_value, angle);
+            }
+            else
+            {
+                lineToPolar(path, radius * value / max_value, angle);
+            }
+        }
         path.close();
 
         canvas.drawPath(path, value_paint);
@@ -139,12 +164,24 @@ public class RadarChart extends View
         int height = getHeight();
         float radius = getWidth() * 0.5f;
 
-        textOnPolar(canvas, "STR", radius, angle_90, -height * 0.02f);
-        textOnPolar(canvas, "DEX", radius, angle_30, -height * 0.03f);
-        textOnPolar(canvas, "AGI", radius, angle_330, height * 0.03f);
-        textOnPolar(canvas, "VIT", radius, angle_270, height * 0.02f);
-        textOnPolar(canvas, "WIS", radius, angle_210, height * 0.03f);
-        textOnPolar(canvas, "LUC", radius, angle_150, -height * 0.03f);
+        Map<String, Pair<float[], Float>> ability_text_info = Map.of(
+                "STR", new Pair<>(angle_90, -0.02f),
+                "DEX", new Pair<>(angle_30, -0.03f),
+                "AGI", new Pair<>(angle_330, 0.03f),
+                "VIT", new Pair<>(angle_270, 0.02f),
+                "WIS", new Pair<>(angle_210, 0.03f),
+                "LUC", new Pair<>(angle_150, -0.03f)
+        );
+
+        for (Map.Entry<String, Pair<float[], Float>> entry: ability_text_info.entrySet())
+        {
+            String ability = entry.getKey();
+            Pair<float[], Float> pair = entry.getValue();
+            float[] angle = pair.first;
+            float rate = pair.second;
+
+            textOnPolar(canvas, ability, radius, angle, height * rate);
+        }
     }
 
     private void moveToPolar(Path path, float radius, float[] angle)
@@ -175,11 +212,13 @@ public class RadarChart extends View
 
     public void update()
     {
-        data[0] = Player.Instance.getSTR();
-        data[1] = Player.Instance.getDEX();
-        data[2] = Player.Instance.getAGI();
-        data[3] = Player.Instance.getVIT();
-        data[4] = Player.Instance.getWIS();
-        data[5] = Player.Instance.getLUC();
+        for (String ability: max_value.keySet())
+        {
+            int value = Player.getAbility(ability);
+            data.put(ability, value);
+        }
+        invalidate();
     }
+
+    public void setMaxValue(Map<String, Integer> max_value) { this.max_value = max_value; }
 }

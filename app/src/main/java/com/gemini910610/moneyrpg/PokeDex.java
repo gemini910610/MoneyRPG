@@ -10,11 +10,11 @@ import java.util.ArrayList;
 
 public class PokeDex
 {
-    public static PokeDex Instance;
+    private static PokeDex Instance;
 
-    public SQLiteDatabase database;
-    public ArrayList<Integer> basic_pokemons = new ArrayList<>();
-    public int pokemon_count;
+    private final SQLiteDatabase database;
+    private final ArrayList<Integer> basic_pokemons = new ArrayList<>();
+    private final int pokemon_count;
 
     public PokeDex(Context context)
     {
@@ -37,6 +37,9 @@ public class PokeDex
         pokemon_count = cursor.getInt(0);
         cursor.close();
     }
+
+    public static ArrayList<Integer> getBasicPokemons() { return Instance.basic_pokemons; }
+    public static int getPokemonCount() { return Instance.pokemon_count; }
 
     public static class Pokemon
     {
@@ -68,11 +71,11 @@ public class PokeDex
 
     public static Pokemon randomPokemon(ArrayList<Integer> pokemons)
     {
-        int index = (int)(Math.random() * pokemons.size());
+        int index = (int) (Math.random() * pokemons.size());
         int id = pokemons.get(index);
         Pokemon pokemon = new Pokemon(id);
 
-        while (Player.Instance.getLevel() >= pokemon.evolution_level)
+        while (Player.getLevel() >= pokemon.evolution_level)
         {
             if (pokemon.evolution.isEmpty())
             {
