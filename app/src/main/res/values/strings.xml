@@ -2,7 +2,6 @@
     <string name="app_name">MoneyRPG</string>
     <string name="battle">battle</string>
     <string name="boost">boost</string>
-    <string name="charge">charge</string>
     <string name="coin">coin</string>
     <string name="select_pokemon_message">please select your pokemon</string>
     <string name="reset">reset</string>
@@ -18,4 +17,8 @@
     <string name="ok">ok</string>
     <string name="check_reset">Are you sure to reset all player data?</string>
     <string name="check_random">Are you sure to random a pokemon?</string>
+    <string name="back">back</string>
+    <string name="new_data">new</string>
+    <string name="wallet">wallet</string>
+    <string name="balance">Balance</string>
 </resources>

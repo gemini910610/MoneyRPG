@@ -13,6 +13,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
@@ -22,6 +24,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -257,7 +260,7 @@ class ResetCheckDialog extends Dialog
         super(context);
         setContentView(R.layout.dialog_check);
 
-        TextView message = findViewById(R.id.message);
+        TextView message = findViewById(R.id.check_message);
         Button cancel_button = findViewById(R.id.cancel_button);
         Button ok_button = findViewById(R.id.ok_button);
 
@@ -281,7 +284,7 @@ class RandomCheckDialog extends Dialog
         super(context);
         setContentView(R.layout.dialog_check);
 
-        TextView message = findViewById(R.id.message);
+        TextView message = findViewById(R.id.check_message);
         Button cancel_button = findViewById(R.id.cancel_button);
         Button ok_button = findViewById(R.id.ok_button);
 
@@ -356,8 +359,6 @@ class BoostDialog extends BottomSheetDialog
             });
             dialog.show();
         });
-
-        setupBoostButton();
     }
 
     public void setupBoostButton()
@@ -403,6 +404,22 @@ public class MainActivity extends AppCompatActivity
     private TextView exp_text, coin_text;
     private ImageView pokemon_image;
     private BoostDialog boost_dialog;
+
+    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        Intent intent = result.getData();
+        if (intent == null)
+        {
+            return;
+        }
+
+        int coin = intent.getIntExtra("coin", 0);
+        if (coin > 0)
+        {
+            Player.gainCoin(coin);
+            setCoinText();
+            showMessage(stringFormat("%s +%d", getString(R.string.coin), coin));
+        }
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -494,6 +511,20 @@ public class MainActivity extends AppCompatActivity
         boost_dialog.setupBoostButton();
     }
 
+    private void showMessage(String message)
+    {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.main), message, Snackbar.LENGTH_SHORT);
+        snackbar.setAnchorView(R.id.boost_button);
+        snackbar.setAnimationMode(Snackbar.ANIMATION_MODE_FADE);
+
+        View view = snackbar.getView();
+        TextView text = view.findViewById(com.google.android.material.R.id.snackbar_text);
+        text.setTypeface(getResources().getFont(R.font.pixel));
+        text.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
+        snackbar.show();
+    }
+
     public void restart()
     {
         Intent intent = new Intent(this, MainActivity.class);
@@ -507,11 +538,14 @@ public class MainActivity extends AppCompatActivity
 
     public void showBoostDialog(View view)
     {
+        boost_dialog.setupBoostButton();
         boost_dialog.show();
     }
 
-    public void charge(View view)
+    public void gotoWallet(View view)
     {
+        Intent intent = new Intent(this, WalletActivity.class);
+        launcher.launch(intent);
     }
 
     @Override

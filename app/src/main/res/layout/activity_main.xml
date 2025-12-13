@@ -102,8 +102,8 @@
             android:background="#C35FFF"
             android:fontFamily="@font/pixel"
             android:letterSpacing="0.1"
-            android:onClick="charge"
-            android:text="@string/charge"
+            android:onClick="gotoWallet"
+            android:text="@string/wallet"
             android:textAllCaps="false"
             android:textColor="#000000"
             android:textSize="20sp"/>
