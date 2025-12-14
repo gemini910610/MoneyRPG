@@ -234,9 +234,9 @@ class SelectPokemonDialog extends Dialog
         window.setBackgroundDrawableResource(R.drawable.rounded_corner_background);
         setCancelable(false);
 
-        MainActivity.summonPokemon(new PokeDex.Pokemon(1), pokemon_1);
-        MainActivity.summonPokemon(new PokeDex.Pokemon(4), pokemon_2);
-        MainActivity.summonPokemon(new PokeDex.Pokemon(7), pokemon_3);
+        MainActivity.summonPokemon(new PokeDex.Pokemon(1), pokemon_1, false);
+        MainActivity.summonPokemon(new PokeDex.Pokemon(4), pokemon_2, false);
+        MainActivity.summonPokemon(new PokeDex.Pokemon(7), pokemon_3, false);
 
         pokemon_1.setOnClickListener(view -> {
             onSelected.accept(1);
@@ -295,8 +295,8 @@ class RandomCheckDialog extends Dialog
         cancel_button.setOnClickListener(view -> cancel());
         ok_button.setOnClickListener(view -> {
             Player.resetKeepBoxOnly();
-//            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(Player.getPokemonBox());
-            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(PokeDex.getBasicPokemons());
+//            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(Player.getLevel(), Player.getPokemonBox());
+            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(Player.getLevel(), PokeDex.getBasicPokemons());
             Player.setPokemon(pokemon);
             Player.save();
             dismiss();
@@ -405,7 +405,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView pokemon_image;
     private BoostDialog boost_dialog;
 
-    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    private final ActivityResultLauncher<Intent> wallet_launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         Intent intent = result.getData();
         if (intent == null)
         {
@@ -419,6 +419,16 @@ public class MainActivity extends AppCompatActivity
             setCoinText();
             showMessage(stringFormat("%s +%d", getString(R.string.coin), coin));
         }
+    });
+
+    private final ActivityResultLauncher<Intent> battle_launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        Intent intent = result.getData();
+        if (intent == null)
+        {
+            return;
+        }
+
+        // get return data
     });
 
     @Override
@@ -462,13 +472,13 @@ public class MainActivity extends AppCompatActivity
                 PokeDex.Pokemon pokemon = new PokeDex.Pokemon(id);
                 Player.gotchaPokemon(pokemon);
                 Player.setPokemon(pokemon);
-                summonPokemon(pokemon, pokemon_image);
+                summonPokemon(pokemon, pokemon_image, false);
             });
             dialog.show();
         }
         else
         {
-            summonPokemon(Player.getPokemon(), pokemon_image);
+            summonPokemon(Player.getPokemon(), pokemon_image, false);
         }
 
         radar_chart.update();
@@ -493,9 +503,9 @@ public class MainActivity extends AppCompatActivity
         return String.format(Locale.getDefault(), format, args);
     }
 
-    public static void summonPokemon(PokeDex.Pokemon pokemon, ImageView image)
+    public static void summonPokemon(PokeDex.Pokemon pokemon, ImageView image, boolean is_back)
     {
-        String pokemon_image_url = stringFormat("file:///android_asset/pokemon/%d.gif", pokemon.id);
+        String pokemon_image_url = stringFormat("file:///android_asset/%s/%d.gif", is_back ? "pokemon_back" : "pokemon", pokemon.id);
         Glide.with(image.getContext()).asGif().load(pokemon_image_url).override(Target.SIZE_ORIGINAL).into(image);
     }
 
@@ -532,8 +542,10 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
-    public void battle(View view)
+    public void gotoBattle(View view)
     {
+        Intent intent = new Intent(this, BattleActivity.class);
+        battle_launcher.launch(intent);
     }
 
     public void showBoostDialog(View view)
@@ -545,7 +557,7 @@ public class MainActivity extends AppCompatActivity
     public void gotoWallet(View view)
     {
         Intent intent = new Intent(this, WalletActivity.class);
-        launcher.launch(intent);
+        wallet_launcher.launch(intent);
     }
 
     @Override

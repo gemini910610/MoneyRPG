@@ -75,13 +75,13 @@ public class PokeDex
         }
     }
 
-    public static Pokemon randomPokemon(ArrayList<Integer> pokemons)
+    public static Pokemon randomPokemon(int level, ArrayList<Integer> pokemons)
     {
         int index = (int) (Math.random() * pokemons.size());
         int id = pokemons.get(index);
         Pokemon pokemon = new Pokemon(id);
 
-        while (Player.getLevel() >= pokemon.evolution_level)
+        while (level >= pokemon.evolution_level)
         {
             if (pokemon.evolution.isEmpty())
             {

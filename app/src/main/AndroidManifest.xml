@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MoneyRPG">
         <activity
+            android:name=".BattleActivity"
+            android:exported="false" />
+        <activity
             android:name=".WalletActivity"
             android:exported="false" />
         <activity
