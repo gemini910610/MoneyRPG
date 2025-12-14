@@ -134,7 +134,7 @@ class Player
 
             if (Instance.level == Instance.pokemon.evolution_level)
             {
-                PokeDex.Pokemon pokemon = Instance.pokemon.evolution();
+                Instance.pokemon = Instance.pokemon.evolution();
             }
         }
     }

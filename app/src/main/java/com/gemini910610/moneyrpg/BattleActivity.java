@@ -32,7 +32,7 @@ class GameCharacter
     private ScaleAnimation animation;
 
     protected  int level;
-    private int atk, life, max_life, miss_rate, cd;
+    private int atk, life, max_life, dodge_rate, cd;
     private final PokeDex.Pokemon pokemon;
     private final boolean belong_to_player;
 
@@ -55,7 +55,7 @@ class GameCharacter
         atk = str;
         max_life = vit * 2;
         life = max_life;
-        miss_rate = dex;
+        dodge_rate = dex;
         cd = 1000 - 10 * agi;
     }
 
@@ -118,7 +118,7 @@ class GameCharacter
 
     private boolean isMiss()
     {
-        return Math.random() * 100 <= miss_rate;
+        return Math.random() * 100 <= dodge_rate;
     }
 }
 

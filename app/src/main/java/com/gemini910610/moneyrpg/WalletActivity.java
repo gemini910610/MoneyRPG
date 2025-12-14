@@ -250,8 +250,10 @@ public class WalletActivity extends AppCompatActivity
         values.put("date", new_data.date);
         values.put("money", new_data.money);
 
-        SQLiteDatabase database = helper.getReadableDatabase();
-        database.update("records", values, MainActivity.stringFormat("_id=%d", old_data.getID()), null);
+        new_data.setID(old_data.getID());
+
+        SQLiteDatabase database = helper.getWritableDatabase();
+        database.update("records", values, MainActivity.stringFormat("_id=%d", new_data.getID()), null);
         database.close();
 
         adapter.updateItem(old_data, new_data);
@@ -265,7 +267,7 @@ public class WalletActivity extends AppCompatActivity
         values.put("date", data.date);
         values.put("money", data.money);
 
-        SQLiteDatabase database = helper.getReadableDatabase();
+        SQLiteDatabase database = helper.getWritableDatabase();
         int id = Math.toIntExact(database.insert("records", null, values));
         database.close();
 
@@ -275,7 +277,7 @@ public class WalletActivity extends AppCompatActivity
 
     private void deleteData(RecordAdapter.RecordData data)
     {
-        SQLiteDatabase database = helper.getReadableDatabase();
+        SQLiteDatabase database = helper.getWritableDatabase();
         database.delete("records", MainActivity.stringFormat("_id=%d", data.getID()), null);
         database.close();
 
