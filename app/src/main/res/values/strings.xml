@@ -30,4 +30,7 @@
     <string name="edit">edit</string>
     <string name="delete">delete</string>
     <string name="check_delete">Are you sure to delete?</string>
+    <string name="exp">EXP</string>
+    <string name="win">You Win!</string>
+    <string name="lose">You Lose...</string>
 </resources>

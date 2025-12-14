@@ -1,11 +1,17 @@
 package com.gemini910610.moneyrpg;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -15,9 +21,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.Objects;
+
 class GameCharacter
 {
-    private int level, atk, life, max_life, miss_rate, cd;
+    private ImageView pokemon_image;
+    private TextView life_text;
+    private ProgressBar life_bar;
+
+    private ScaleAnimation animation;
+
+    protected  int level;
+    private int atk, life, max_life, miss_rate, cd;
     private final PokeDex.Pokemon pokemon;
     private final boolean belong_to_player;
 
@@ -28,8 +43,12 @@ class GameCharacter
         this.belong_to_player = belong_to_player;
 
         initializeAbility(str, dex, agi, vit);
-        ScaleAnimation animation = initializeAnimation();
+        initializeAnimation();
     }
+
+    public int getLife() { return life; }
+    public PokeDex.Pokemon getPokemon() { return pokemon; }
+    public int getCD() { return cd; }
 
     private void initializeAbility(int str, int dex, int agi, int vit)
     {
@@ -40,23 +59,22 @@ class GameCharacter
         cd = 1000 - 10 * agi;
     }
 
-    private ScaleAnimation initializeAnimation()
+    private void initializeAnimation()
     {
         int pivot_x = belong_to_player ? 0 : 1;
         int pivot_y = belong_to_player ? 1 : 0;
-        ScaleAnimation animation = new ScaleAnimation(1, 1.1f, 1, 1.1f, ScaleAnimation.RELATIVE_TO_SELF, pivot_x, Animation.RELATIVE_TO_SELF, pivot_y);
+        animation = new ScaleAnimation(1, 1.1f, 1, 1.1f, ScaleAnimation.RELATIVE_TO_SELF, pivot_x, Animation.RELATIVE_TO_SELF, pivot_y);
         animation.setDuration(100);
         animation.setRepeatCount(1);
         animation.setRepeatMode(Animation.REVERSE);
-        return animation;
     }
 
     public void setupUI(BattleActivity activity, int pokemon_image_id, int level_text_id, int life_text_id, int life_bar_id)
     {
-        ImageView pokemon_image = activity.findViewById(pokemon_image_id);
+        pokemon_image = activity.findViewById(pokemon_image_id);
         TextView level_text = activity.findViewById(level_text_id);
-        TextView life_text = activity.findViewById(life_text_id);
-        ProgressBar life_bar = activity.findViewById(life_bar_id);
+        life_text = activity.findViewById(life_text_id);
+        life_bar = activity.findViewById(life_bar_id);
 
         MainActivity.summonPokemon(pokemon, pokemon_image, belong_to_player);
         level_text.setText(MainActivity.stringFormat("LV.%d", level));
@@ -64,6 +82,43 @@ class GameCharacter
         life_bar.setMax(max_life);
         life_bar.setProgress(life);
         life_bar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+    }
+
+    public void attack(GameCharacter target)
+    {
+        pokemon_image.startAnimation(animation);
+
+        if (target.isMiss())
+        {
+            return;
+        }
+
+        target.life -= atk;
+        if (target.life < 0)
+        {
+            target.life = 0;
+        }
+        target.updateLife();
+
+        if (target.life <= atk)
+        {
+            target.life_bar.setProgressTintList(ColorStateList.valueOf(Color.RED));
+        }
+        else if ((float) target.life / target.max_life <= 0.5)
+        {
+            target.life_bar.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 125, 0)));
+        }
+    }
+
+    private void updateLife()
+    {
+        life_text.setText(MainActivity.stringFormat("%d/%d", life, max_life));
+        life_bar.setProgress(life);
+    }
+
+    private boolean isMiss()
+    {
+        return Math.random() * 100 <= miss_rate;
     }
 }
 
@@ -131,10 +186,61 @@ class OpponentCharacter extends GameCharacter
 
         return new OpponentCharacter(level, pokemon, str, dex, agi, vit, false);
     }
+
+    private int basicDropExp(int defeater_level)
+    {
+        int basic = (int) (1.5 * level);
+        int level_distance = level - defeater_level;
+        float reward = (float) level / defeater_level;
+        return (int) (basic * reward / (1 - level_distance * 0.1));
+    }
+
+    public int[] getRewards(int defeater_level, int wis, int luc)
+    {
+        int reward_rate = basicDropExp(defeater_level);
+        int exp = (int) (reward_rate * (1 + wis * 0.05));
+        int coin = (int) (reward_rate * 50 * (1 + luc * 0.05));
+        return new int[] {exp, coin};
+    }
+}
+
+class BattleResultDialog extends Dialog
+{
+    public BattleResultDialog(Context context, boolean player_win, int exp, int coin, Runnable onClicked)
+    {
+        super(context);
+        setContentView(R.layout.dialog_battle_result);
+
+        LinearLayout dialog_view = findViewById(R.id.dialog_view);
+        TextView result_text = findViewById(R.id.result_text);
+        TextView exp_text = findViewById(R.id.exp_text);
+        TextView coin_text = findViewById(R.id.coin_text);
+
+        Window window = Objects.requireNonNull(getWindow());
+        window.setBackgroundDrawableResource(R.drawable.rounded_corner_background);
+
+        dialog_view.setOnClickListener(view -> {
+            dismiss();
+            onClicked.run();
+        });
+        result_text.setText(player_win ? R.string.win : R.string.lose);
+        exp_text.setText(MainActivity.stringFormat("+%d", exp));
+        coin_text.setText(MainActivity.stringFormat("+%d", coin));
+
+        setOnCancelListener(dialog -> {
+            dismiss();
+            onClicked.run();
+        });
+    }
 }
 
 public class BattleActivity extends AppCompatActivity
 {
+    private enum Turn { PLAYER, OPPONENT }
+    private Turn current_turn = Turn.PLAYER;
+    private boolean battle_running = true;
+    private Handler handler;
+    private Runnable battle_loop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -153,5 +259,76 @@ public class BattleActivity extends AppCompatActivity
 
         OpponentCharacter opponent_character = OpponentCharacter.create(Player.getLevel());
         opponent_character.setupUI(this, R.id.opponent_image, R.id.opponent_level_text, R.id.opponent_life_text, R.id.opponent_life_bar);
+
+        handler = new Handler();
+
+        battle_loop = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (!battle_running)
+                {
+                    return;
+                }
+
+                switch (current_turn)
+                {
+                    case PLAYER:
+                        player_character.attack(opponent_character);
+                        if (opponent_character.getLife() == 0)
+                        {
+                            endBattle(true, opponent_character);
+                            return;
+                        }
+
+                        current_turn = Turn.OPPONENT;
+                        handler.postDelayed(this, opponent_character.getCD());
+                        break;
+                    case OPPONENT:
+                        opponent_character.attack(player_character);
+                        if (player_character.getLife() == 0)
+                        {
+                            endBattle(false, opponent_character);
+                            return;
+                        }
+
+                        current_turn = Turn.PLAYER;
+                        handler.postDelayed(this, player_character.getCD());
+                }
+            }
+        };
+        handler.postDelayed(battle_loop, player_character.getCD());
+    }
+
+    private void endBattle(boolean player_win, OpponentCharacter opponent)
+    {
+        battle_running = false;
+        handler.removeCallbacks(battle_loop);
+
+        BattleResultDialog dialog;
+
+        if (player_win)
+        {
+            Player.gotchaPokemon(opponent.getPokemon());
+            int[] rewards = opponent.getRewards(Player.getLevel(), Player.getWIS(), Player.getLUC());
+            int exp = rewards[0];
+            int coin = rewards[1];
+            dialog = new BattleResultDialog(this, true, exp, coin, () -> back(exp, coin));
+        }
+        else
+        {
+            dialog = new BattleResultDialog(this, false, 0, 0, this::finish);
+        }
+        dialog.show();
+    }
+
+    private void back(int exp, int coin)
+    {
+        Intent intent = new Intent();
+        intent.putExtra("exp", exp);
+        intent.putExtra("coin", coin);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }

@@ -46,7 +46,7 @@ public class PokeDex
     public static class Pokemon
     {
         public int id;
-        public ArrayList<Integer> evolution = new ArrayList<>();
+        public ArrayList<Integer> evolutions = new ArrayList<>();
         public boolean is_basic;
         public int evolution_level;
 
@@ -64,7 +64,7 @@ public class PokeDex
             {
                 for (String evolution_id: evolution_string.split(","))
                 {
-                    evolution.add(Integer.parseInt(evolution_id));
+                    evolutions.add(Integer.parseInt(evolution_id));
                 }
             }
             is_basic = cursor.getInt(2) == 1;
@@ -72,6 +72,17 @@ public class PokeDex
             cursor.close();
 
             database.close();
+        }
+
+        public Pokemon evolution()
+        {
+            if (evolutions.isEmpty())
+            {
+                return this;
+            }
+
+            int id = evolutions.get(0);
+            return new Pokemon(id);
         }
     }
 
@@ -83,12 +94,11 @@ public class PokeDex
 
         while (level >= pokemon.evolution_level)
         {
-            if (pokemon.evolution.isEmpty())
+            if (pokemon.evolutions.isEmpty())
             {
                 break;
             }
-            id = pokemon.evolution.get(0);
-            pokemon = new Pokemon(id);
+            pokemon = pokemon.evolution();
         }
 
         return pokemon;

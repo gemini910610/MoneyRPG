@@ -125,7 +125,18 @@ class Player
     public static void gainEXP(int exp)
     {
         Instance.exp += exp;
-        // check level up or evolution
+
+        while (Instance.exp >= Instance.needed_exp)
+        {
+            Instance.level++;
+            Instance.exp -= Instance.needed_exp;
+            Instance.calculateNeededEXP();
+
+            if (Instance.level == Instance.pokemon.evolution_level)
+            {
+                PokeDex.Pokemon pokemon = Instance.pokemon.evolution();
+            }
+        }
     }
 
     public static void gainCoin(int coin)
@@ -428,7 +439,15 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        // get return data
+        int exp = intent.getIntExtra("exp", 0);
+        int coin = intent.getIntExtra("coin", 0);
+        Player.gainEXP(exp);
+        Player.gainCoin(coin);
+        setExpText();
+        setCoinText();
+
+        String message = stringFormat("%s +%d  %s +%d", getString(R.string.coin), coin, getString(R.string.exp), exp);
+        showMessage(message);
     });
 
     @Override
