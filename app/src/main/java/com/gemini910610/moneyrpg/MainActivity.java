@@ -224,7 +224,7 @@ class SelectPokemonDialog extends Dialog
     public SelectPokemonDialog(Context context, Consumer<Integer> onSelected)
     {
         super(context);
-        setContentView(R.layout.dialog_select_pokemon);
+        setContentView(R.layout.dialog_pokemon_select);
 
         ImageView pokemon_1 = findViewById(R.id.pokemon_1);
         ImageView pokemon_2 = findViewById(R.id.pokemon_2);

@@ -8,7 +8,7 @@
     tools:context=".WalletActivity">
 
     <TextView
-        android:id="@+id/money_text"
+        android:id="@+id/balance_text"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -56,6 +56,7 @@
             android:background="#C35FFF"
             android:fontFamily="@font/pixel"
             android:letterSpacing="0.1"
+            android:onClick="newRecord"
             android:text="@string/new_data"
             android:textAllCaps="false"
             android:textColor="#000000"

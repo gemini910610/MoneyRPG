@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_margin="5dp"
     android:background="@drawable/rounded_corner_background"
     android:padding="10dp">
@@ -38,7 +38,7 @@
             android:textSize="20sp"/>
 
         <TextView
-            android:id="@+id/money_text"
+            android:id="@+id/balance_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"

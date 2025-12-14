@@ -21,4 +21,13 @@
     <string name="new_data">new</string>
     <string name="wallet">wallet</string>
     <string name="balance">Balance</string>
+    <string name="title">title</string>
+    <string name="category">category</string>
+    <string name="date">date</string>
+    <string name="money">money</string>
+    <string name="income">income</string>
+    <string name="outcome">outcome</string>
+    <string name="edit">edit</string>
+    <string name="delete">delete</string>
+    <string name="check_delete">Are you sure to delete?</string>
 </resources>
