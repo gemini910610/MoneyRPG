@@ -1,17 +1,13 @@
 package com.gemini910610.moneyrpg;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -21,7 +17,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.util.Objects;
+import com.gemini910610.moneyrpg.dialogs.BattleResultDialog;
 
 class GameCharacter
 {
@@ -63,7 +59,7 @@ class GameCharacter
     {
         int pivot_x = belong_to_player ? 0 : 1;
         int pivot_y = belong_to_player ? 1 : 0;
-        animation = new ScaleAnimation(1, 1.1f, 1, 1.1f, ScaleAnimation.RELATIVE_TO_SELF, pivot_x, Animation.RELATIVE_TO_SELF, pivot_y);
+        animation = new ScaleAnimation(1, 1.25f, 1, 1.25f, ScaleAnimation.RELATIVE_TO_SELF, pivot_x, Animation.RELATIVE_TO_SELF, pivot_y);
         animation.setDuration(100);
         animation.setRepeatCount(1);
         animation.setRepeatMode(Animation.REVERSE);
@@ -204,36 +200,6 @@ class OpponentCharacter extends GameCharacter
     }
 }
 
-class BattleResultDialog extends Dialog
-{
-    public BattleResultDialog(Context context, boolean player_win, int exp, int coin, Runnable onClicked)
-    {
-        super(context);
-        setContentView(R.layout.dialog_battle_result);
-
-        LinearLayout dialog_view = findViewById(R.id.dialog_view);
-        TextView result_text = findViewById(R.id.result_text);
-        TextView exp_text = findViewById(R.id.exp_text);
-        TextView coin_text = findViewById(R.id.coin_text);
-
-        Window window = Objects.requireNonNull(getWindow());
-        window.setBackgroundDrawableResource(R.drawable.rounded_corner_background);
-
-        dialog_view.setOnClickListener(view -> {
-            dismiss();
-            onClicked.run();
-        });
-        result_text.setText(player_win ? R.string.win : R.string.lose);
-        exp_text.setText(MainActivity.stringFormat("+%d", exp));
-        coin_text.setText(MainActivity.stringFormat("+%d", coin));
-
-        setOnCancelListener(dialog -> {
-            dismiss();
-            onClicked.run();
-        });
-    }
-}
-
 public class BattleActivity extends AppCompatActivity
 {
     private enum Turn { PLAYER, OPPONENT }
@@ -330,5 +296,13 @@ public class BattleActivity extends AppCompatActivity
         intent.putExtra("coin", coin);
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        battle_running = false;
+        handler.removeCallbacks(battle_loop);
     }
 }

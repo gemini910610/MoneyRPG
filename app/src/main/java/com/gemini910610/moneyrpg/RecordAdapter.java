@@ -9,9 +9,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
@@ -69,12 +69,12 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
 
     private int findInsertPosition(RecordData new_data)
     {
-        LocalDate new_date = LocalDate.parse(new_data.date);
-
         for (int i = 0; i < datum.size(); i++)
         {
-            LocalDate date = LocalDate.parse(datum.get(i).date);
-            if (new_date.isAfter(date))
+            String new_date = new_data.date;
+            RecordData data = datum.get(i);
+            String old_date = data.date;
+            if (new_date.compareTo(old_date) > 0)
             {
                 return i;
             }
@@ -96,7 +96,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             this.view = view;
             title_text = view.findViewById(R.id.record_title);
             date_text = view.findViewById(R.id.date_text);
-            money_text = view.findViewById(R.id.balance_text);
+            money_text = view.findViewById(R.id.money_text);
 
             this.onLongClick = onLongClicked;
         }
@@ -107,8 +107,9 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             date_text.setText(data.date);
             money_text.setText(String.valueOf(data.money));
 
-            Drawable drawable = view.getBackground();
-            drawable.setColorFilter(data.is_earn ? Color.GREEN : Color.YELLOW, PorterDuff.Mode.SCREEN);
+            Drawable drawable = view.getBackground().mutate();
+            int color = data.is_earn ? Color.GREEN : Color.YELLOW;
+            DrawableCompat.setTint(drawable, color);
             view.setBackground(drawable);
 
             view.setOnLongClickListener(view -> {

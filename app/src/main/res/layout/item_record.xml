@@ -38,7 +38,7 @@
             android:textSize="20sp"/>
 
         <TextView
-            android:id="@+id/balance_text"
+            android:id="@+id/money_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
