@@ -28,8 +28,7 @@ public class RandomCheckDialog extends Dialog {
         cancel_button.setOnClickListener(view -> cancel());
         ok_button.setOnClickListener(view -> {
             Player.resetKeepBoxOnly();
-//            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(Player.getLevel(), Player.getPokemonBox());
-            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(Player.getLevel(), PokeDex.getBasicPokemons());
+            PokeDex.Pokemon pokemon = PokeDex.randomPokemon(Player.getLevel(), Player.getPokemonBox());
             Player.setPokemon(pokemon);
             Player.save();
             dismiss();

@@ -1,15 +1,14 @@
 package com.gemini910610.moneyrpg;
 
+import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -53,16 +52,25 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
         notifyItemInserted(position);
     }
 
+    public void setItems(ArrayList<RecordData> datum)
+    {
+        this.datum.clear();
+        this.datum.addAll(datum);
+        notifyDataSetChanged();
+    }
+
     public void updateItem(RecordData old_data, RecordData new_data)
     {
-        int position = datum.indexOf(old_data);
-        datum.set(position, new_data);
-        notifyItemChanged(position);
+        int old_position = indexOf(old_data);
+        datum.remove(old_position);
+        notifyItemRemoved(old_position);
+
+        addItem(new_data);
     }
 
     public void removeItem(RecordData data)
     {
-        int position = datum.indexOf(data);
+        int position = indexOf(data);
         datum.remove(data);
         notifyItemRemoved(position);
     }
@@ -80,6 +88,19 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             }
         }
         return datum.size();
+    }
+
+    private int indexOf(RecordData data)
+    {
+        long id = data.id;
+        for (int i = 0; i < datum.size(); i++)
+        {
+            if (datum.get(i).id == id)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static class RecordViewHolder extends RecyclerView.ViewHolder
@@ -107,10 +128,8 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             date_text.setText(data.date);
             money_text.setText(String.valueOf(data.money));
 
-            Drawable drawable = view.getBackground().mutate();
             int color = data.is_earn ? Color.GREEN : Color.YELLOW;
-            DrawableCompat.setTint(drawable, color);
-            view.setBackground(drawable);
+            ViewCompat.setBackgroundTintList(view, ColorStateList.valueOf(color));
 
             view.setOnLongClickListener(view -> {
                 onLongClick.accept(data);
@@ -121,7 +140,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
 
     public static class RecordData
     {
-        private int id;
+        private long id;
         public String title;
         public String date;
         public int money;
@@ -135,8 +154,8 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             this.is_earn = is_earn;
         }
 
-        public int getID() { return id; }
+        public long getID() { return id; }
 
-        public void setID(int id) { this.id = id; }
+        public void setID(long id) { this.id = id; }
     }
 }

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Player
 {
@@ -18,10 +20,14 @@ public class Player
 
     public Player(Context context)
     {
-        Instance = this;
-
         preferences = context.getSharedPreferences("player", Context.MODE_PRIVATE);
-        load();
+    }
+    public static void init(Context context)
+    {
+        if (Instance == null)
+        {
+            Instance = new Player(context);
+        }
     }
 
     public static int getLevel() { return Instance.level; }
@@ -135,8 +141,12 @@ public class Player
         {
             Instance.pokemon_box.add(id);
 
+            Set<String> old_pokemon_box = Instance.preferences.getStringSet("pokemon_box", new HashSet<>());
+            Set<String> new_pokemon_box = new HashSet<>(old_pokemon_box);
+            new_pokemon_box.add(String.valueOf(id));
+
             SharedPreferences.Editor editor = Instance.preferences.edit();
-            editor.putBoolean(String.valueOf(id), true);
+            editor.putStringSet("pokemon_box", new_pokemon_box);
             editor.apply();
         }
     }
@@ -175,11 +185,12 @@ public class Player
         Instance.calculateNeededEXP();
 
         Instance.pokemon_box.clear();
-        for (int id = 1; id <= PokeDex.getPokemonCount(); id++)
+        Set<String> pokemon_box = Instance.preferences.getStringSet("pokemon_box", null);
+        if (pokemon_box != null)
         {
-            if (Instance.preferences.getBoolean(String.valueOf(id), false))
+            for (String id: pokemon_box)
             {
-                Instance.pokemon_box.add(id);
+                Instance.pokemon_box.add(Integer.parseInt(id));
             }
         }
     }

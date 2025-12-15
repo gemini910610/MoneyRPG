@@ -12,16 +12,13 @@ public class PokeDex
 {
     private static PokeDex Instance;
 
-    private final SQLiteAssetHelper helper;
+    private final SQLiteDatabase database;
     private final ArrayList<Integer> basic_pokemons = new ArrayList<>();
-    private final int pokemon_count;
 
     public PokeDex(Context context)
     {
-        Instance = this;
-
-        helper = new SQLiteAssetHelper(context, "pokemon.db", null, 1);
-        SQLiteDatabase database = helper.getReadableDatabase();
+        SQLiteAssetHelper helper = new SQLiteAssetHelper(context, "pokemon.db", null, 1);
+        database = helper.getReadableDatabase();
 
         Cursor cursor = database.rawQuery("SELECT id FROM pokemon WHERE basic=1", null);
         cursor.moveToFirst();
@@ -34,14 +31,17 @@ public class PokeDex
 
         cursor = database.rawQuery("SELECT count(*) FROM pokemon", null);
         cursor.moveToFirst();
-        pokemon_count = cursor.getInt(0);
         cursor.close();
-
-        database.close();
+    }
+    public static void init(Context context)
+    {
+        if (Instance == null)
+        {
+            Instance = new PokeDex(context);
+        }
     }
 
     public static ArrayList<Integer> getBasicPokemons() { return Instance.basic_pokemons; }
-    public static int getPokemonCount() { return Instance.pokemon_count; }
 
     public static class Pokemon
     {
@@ -54,10 +54,7 @@ public class PokeDex
         {
             this.id = id;
 
-            SQLiteDatabase database = PokeDex.Instance.helper.getReadableDatabase();
-
-            String query = MainActivity.stringFormat("SELECT * FROM pokemon WHERE id=%d", id);
-            Cursor cursor = database.rawQuery(query, null);
+            Cursor cursor = PokeDex.Instance.database.rawQuery("SELECT * FROM pokemon WHERE id=?", new String[] { String.valueOf(id) });
             cursor.moveToFirst();
             String evolution_string = cursor.getString(1);
             if (evolution_string != null)
@@ -70,8 +67,6 @@ public class PokeDex
             is_basic = cursor.getInt(2) == 1;
             evolution_level = cursor.getInt(3);
             cursor.close();
-
-            database.close();
         }
 
         public Pokemon evolution()

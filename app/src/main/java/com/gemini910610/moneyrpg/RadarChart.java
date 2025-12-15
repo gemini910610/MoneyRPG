@@ -7,11 +7,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,21 +21,21 @@ public class RadarChart extends View
 {
     Paint radar_paint, radar_border_paint, value_paint, value_border_paint, text_paint;
     private final float[] angle_90, angle_150, angle_210, angle_270, angle_330, angle_30;
-    private Map<String, Integer> max_value = new Hashtable<>();
-    private final Map<String, Integer> data = new Hashtable<>();
+    private Map<String, Integer> max_value = new HashMap<>();
+    private final Map<String, Integer> data = new HashMap<>();
 
     public RadarChart(Context context, AttributeSet attributes)
     {
         super(context, attributes);
 
         radar_paint = new Paint();
-        radar_paint.setStrokeWidth(2.5f);
+        radar_paint.setStrokeWidth(dp(1));
         radar_paint.setStyle(Paint.Style.STROKE);
         radar_paint.setStrokeCap(Paint.Cap.ROUND);
         radar_paint.setStrokeJoin(Paint.Join.ROUND);
 
         radar_border_paint = new Paint();
-        radar_border_paint.setStrokeWidth(10);
+        radar_border_paint.setStrokeWidth(dp(4));
         radar_border_paint.setStyle(Paint.Style.STROKE);
         radar_border_paint.setStrokeCap(Paint.Cap.ROUND);
         radar_border_paint.setStrokeJoin(Paint.Join.ROUND);
@@ -47,13 +48,13 @@ public class RadarChart extends View
 
         value_border_paint = new Paint();
         value_border_paint.setColor(Color.GREEN);
-        value_border_paint.setStrokeWidth(5);
+        value_border_paint.setStrokeWidth(dp(2.5f));
         value_border_paint.setStyle(Paint.Style.STROKE);
         value_border_paint.setStrokeCap(Paint.Cap.ROUND);
         value_border_paint.setStrokeJoin(Paint.Join.ROUND);
 
         text_paint = new Paint();
-        text_paint.setTextSize(50);
+        text_paint.setTextSize(sp(18));
         text_paint.setTextAlign(Paint.Align.CENTER);
         text_paint.setTypeface(getResources().getFont(R.font.pixel));
         text_paint.setLetterSpacing(0.1f);
@@ -75,6 +76,16 @@ public class RadarChart extends View
         drawRadarBorder(canvas);
         drawValues(canvas);
         drawText(canvas);
+    }
+
+    private float dp(float value)
+    {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, getResources().getDisplayMetrics());
+    }
+
+    private float sp(float value)
+    {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, value, getResources().getDisplayMetrics());
     }
 
     private float[] getUnitVector(int angle)

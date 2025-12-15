@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity
         int coin = intent.getIntExtra("coin", 0);
         if (coin > 0)
         {
-            Player.gainCoin(coin);
             setCoinText();
             showMessage(stringFormat("%s +%d", getString(R.string.coin), coin));
         }
@@ -98,9 +97,7 @@ public class MainActivity extends AppCompatActivity
         );
         radar_chart.setMaxValue(max_value);
 
-        new PokeDex(this);
-        new Player(this);
-
+        Player.load();
         setExpText();
         setCoinText();
 

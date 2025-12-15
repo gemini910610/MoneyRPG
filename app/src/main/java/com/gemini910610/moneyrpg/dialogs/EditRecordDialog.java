@@ -51,6 +51,10 @@ public class EditRecordDialog extends Dialog {
 
             boolean is_earn = category_input.getCheckedRadioButtonId() == R.id.income_button;
             String date = date_input_text.getText().toString();
+            if (date.isEmpty())
+            {
+                return;
+            }
 
             String money_text = money_input.getText().toString();
             if (money_text.isEmpty()) {

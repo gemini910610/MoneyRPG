@@ -22,6 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gemini910610.moneyrpg.dialogs.EditRecordDialog;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class RecordHelper extends SQLiteOpenHelper
 {
@@ -48,7 +50,8 @@ public class WalletActivity extends AppCompatActivity
     TextView balance_text;
 
     private RecordHelper helper;
-    RecordAdapter adapter;
+    private RecordAdapter adapter;
+    private ExecutorService executor;
     private int balance = 0;
     private int coin = 0;
 
@@ -67,6 +70,8 @@ public class WalletActivity extends AppCompatActivity
         balance_text = findViewById(R.id.balance_text);
         RecyclerView record_list = findViewById(R.id.record_list);
 
+        executor = Executors.newSingleThreadExecutor();
+
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed()
@@ -79,91 +84,129 @@ public class WalletActivity extends AppCompatActivity
 
         record_list.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecordAdapter(datum, data -> {
-            EditRecordDialog dialog = new EditRecordDialog(this, new_data -> {
-                updateData(data, new_data);
-
+            EditRecordDialog dialog = new EditRecordDialog(this, new_data -> updateDataAsync(data, new_data, () -> {
                 balance -= data.is_earn ? data.money : -data.money;
                 balance += new_data.is_earn ? new_data.money : -new_data.money;
                 balance_text.setText(MainActivity.stringFormat("%s $%d", getString(R.string.balance), balance));
-            });
+            }));
             dialog.setData(data);
-            dialog.enableDelete(() -> {
-                deleteData(data);
-
+            dialog.enableDelete(() -> deleteDataAsync(data, () -> {
                 balance -= data.is_earn ? data.money : -data.money;
                 balance_text.setText(MainActivity.stringFormat("%s $%d", getString(R.string.balance), balance));
-            });
+            }));
             dialog.show();
         });
         record_list.setAdapter(adapter);
 
         helper = new RecordHelper(this);
-        SQLiteDatabase database = helper.getReadableDatabase();
 
-        Cursor cursor = database.rawQuery("SELECT * FROM records ORDER BY date DESC", null);
-        if (cursor.moveToFirst())
-        {
-            do
+        loadDataAsync(() -> balance_text.setText(MainActivity.stringFormat("%s $%d", getString(R.string.balance), balance)));
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        executor.shutdown();
+    }
+
+    private void loadDataAsync(Runnable onLoaded)
+    {
+        executor.execute(() -> {
+            int local_balance = 0;
+            ArrayList<RecordAdapter.RecordData> datum = new ArrayList<>();
+
+            SQLiteDatabase database = helper.getReadableDatabase();
+
+            Cursor cursor = database.rawQuery("SELECT * FROM records ORDER BY date DESC", null);
+
+            if (cursor.moveToFirst())
             {
-                int id = cursor.getInt(0);
-                String title = cursor.getString(1);
-                String date = cursor.getString(2);
-                int money = cursor.getInt(3);
-                boolean is_earn = cursor.getInt(4) == 1;
-                RecordAdapter.RecordData data = new RecordAdapter.RecordData(title, date, money, is_earn);
-                data.setID(id);
-                adapter.addItem(data);
-                balance += is_earn ? money : -money;
+                do
+                {
+                    int id = cursor.getInt(0);
+                    String title = cursor.getString(1);
+                    String date = cursor.getString(2);
+                    int money = cursor.getInt(3);
+                    boolean is_earn = cursor.getInt(4) == 1;
+
+                    RecordAdapter.RecordData data = new RecordAdapter.RecordData(title, date, money, is_earn);
+                    data.setID(id);
+                    datum.add(data);
+
+                    local_balance += is_earn ? money : -money;
+                }
+                while (cursor.moveToNext());
             }
-            while (cursor.moveToNext());
-        }
-        cursor.close();
 
-        database.close();
+            cursor.close();
+            database.close();
 
-        balance_text.setText(MainActivity.stringFormat("%s $%d", getString(R.string.balance), balance));
+            int final_balance = local_balance;
+            runOnUiThread(() -> {
+                balance = final_balance;
+                adapter.setItems(datum);
+                onLoaded.run();
+            });
+        });
     }
 
-    private void updateData(RecordAdapter.RecordData old_data, RecordAdapter.RecordData new_data)
+    private void updateDataAsync(RecordAdapter.RecordData old_date, RecordAdapter.RecordData new_data, Runnable onUpdated)
     {
-        ContentValues values = new ContentValues();
-        values.put("title", new_data.title);
-        values.put("is_earn", new_data.is_earn);
-        values.put("date", new_data.date);
-        values.put("money", new_data.money);
+        executor.execute(() -> {
+            ContentValues values = new ContentValues();
+            values.put("title", new_data.title);
+            values.put("is_earn", new_data.is_earn ? 1 : 0);
+            values.put("date", new_data.date);
+            values.put("money", new_data.money);
 
-        new_data.setID(old_data.getID());
+            new_data.setID(old_date.getID());
 
-        SQLiteDatabase database = helper.getWritableDatabase();
-        database.update("records", values, MainActivity.stringFormat("_id=%d", new_data.getID()), null);
-        database.close();
+            SQLiteDatabase database = helper.getWritableDatabase();
+            database.update("records", values, "_id=?", new String[] { String.valueOf(new_data.getID()) });
+            database.close();
 
-        adapter.updateItem(old_data, new_data);
+            runOnUiThread(() -> {
+                adapter.updateItem(old_date, new_data);
+                onUpdated.run();
+            });
+        });
     }
 
-    private void insertData(RecordAdapter.RecordData data)
+    private void insertDataAsync(RecordAdapter.RecordData data, Runnable onInserted)
     {
-        ContentValues values = new ContentValues();
-        values.put("title", data.title);
-        values.put("is_earn", data.is_earn);
-        values.put("date", data.date);
-        values.put("money", data.money);
+        executor.execute(() -> {
+            ContentValues values = new ContentValues();
+            values.put("title", data.title);
+            values.put("is_earn", data.is_earn ? 1 : 0);
+            values.put("date", data.date);
+            values.put("money", data.money);
 
-        SQLiteDatabase database = helper.getWritableDatabase();
-        int id = Math.toIntExact(database.insert("records", null, values));
-        database.close();
+            SQLiteDatabase database = helper.getWritableDatabase();
+            long id = database.insert("records", null, values);
+            database.close();
 
-        data.setID(id);
-        adapter.addItem(data);
+            data.setID(id);
+
+            runOnUiThread(() -> {
+                adapter.addItem(data);
+                onInserted.run();
+            });
+        });
     }
 
-    private void deleteData(RecordAdapter.RecordData data)
+    private void deleteDataAsync(RecordAdapter.RecordData data, Runnable onDeleted)
     {
-        SQLiteDatabase database = helper.getWritableDatabase();
-        database.delete("records", MainActivity.stringFormat("_id=%d", data.getID()), null);
-        database.close();
+        executor.execute(() -> {
+            SQLiteDatabase database = helper.getWritableDatabase();
+            database.delete("records", "_id=?", new String[] { String.valueOf(data.getID()) });
+            database.close();
 
-        adapter.removeItem(data);
+            runOnUiThread(() -> {
+                adapter.removeItem(data);
+                onDeleted.run();
+            });
+        });
     }
 
     public void goBack(View view)
@@ -181,14 +224,13 @@ public class WalletActivity extends AppCompatActivity
 
     public void newRecord(View view)
     {
-        EditRecordDialog dialog = new EditRecordDialog(this, data -> {
-            insertData(data);
-
+        EditRecordDialog dialog = new EditRecordDialog(this, data -> insertDataAsync(data, () -> {
             balance += data.is_earn ? data.money : -data.money;
             balance_text.setText(MainActivity.stringFormat("%s $%d", getString(R.string.balance), balance));
 
+            Player.gainCoin(1000);
             coin += 1000;
-        });
+        }));
         dialog.show();
     }
 }
