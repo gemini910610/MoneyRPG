@@ -10,14 +10,14 @@ import com.gemini910610.moneyrpg.Player;
 import com.gemini910610.moneyrpg.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public class BoostDialog extends BottomSheetDialog {
     private final Button random_button;
-    private final Map<String, Button> boost_buttons = new Hashtable<>();
+    private final Map<String, Button> boost_buttons = new HashMap<>();
 
     private final Map<String, Integer> max_value;
 

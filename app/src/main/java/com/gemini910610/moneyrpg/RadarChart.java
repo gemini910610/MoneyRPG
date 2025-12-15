@@ -11,6 +11,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +57,7 @@ public class RadarChart extends View
         text_paint = new Paint();
         text_paint.setTextSize(sp(18));
         text_paint.setTextAlign(Paint.Align.CENTER);
-        text_paint.setTypeface(getResources().getFont(R.font.pixel));
+        text_paint.setTypeface(ResourcesCompat.getFont(context, R.font.pixel));
         text_paint.setLetterSpacing(0.1f);
 
         angle_90 = getUnitVector(90);

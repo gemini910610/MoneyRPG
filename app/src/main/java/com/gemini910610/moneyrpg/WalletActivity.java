@@ -108,6 +108,7 @@ public class WalletActivity extends AppCompatActivity
     {
         super.onDestroy();
         executor.shutdown();
+        helper.close();
     }
 
     private void loadDataAsync(Runnable onLoaded)

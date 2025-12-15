@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity
         RadarChart radar_chart = findViewById(R.id.radar_chart);
         pokemon_image = findViewById(R.id.pokemon_image);
 
-        message_font = getResources().getFont(R.font.pixel);
+        message_font = ResourcesCompat.getFont(this, R.font.pixel);
 
         Map<String, Integer> max_value = Map.of(
                 "STR", 100,
