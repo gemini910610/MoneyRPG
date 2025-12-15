@@ -114,7 +114,7 @@ class GameCharacter
 
     private boolean isMiss()
     {
-        return Math.random() * 100 <= dodge_rate;
+        return Math.random() * 100 < dodge_rate;
     }
 }
 
@@ -150,7 +150,7 @@ class OpponentCharacter extends GameCharacter
         int agi = 0;
         int vit = 1;
 
-        int point = (int) Math.pow(level, 1.5) * (int) Math.ceil(level * 0.2) * (int) Math.log10(level * 10);
+        int point = (int) (Math.pow(level, 1.5) * Math.ceil(level * 0.2) * Math.log10(level * 10));
         while (point > 0)
         {
             switch ((int) (Math.random() * 4))

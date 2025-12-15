@@ -7,19 +7,22 @@ import android.database.sqlite.SQLiteDatabase;
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PokeDex
 {
     private static PokeDex Instance;
 
     private final SQLiteDatabase database;
-    private final ArrayList<Integer> basic_pokemons = new ArrayList<>();
+    private final ArrayList<Integer> basic_pokemons;
+    private final HashMap<Integer, Integer> previous_evolution;
 
     public PokeDex(Context context)
     {
         SQLiteAssetHelper helper = new SQLiteAssetHelper(context, "pokemon.db", null, 1);
         database = helper.getReadableDatabase();
 
+        basic_pokemons = new ArrayList<>();
         Cursor cursor = database.rawQuery("SELECT id FROM pokemon WHERE basic=1", null);
         cursor.moveToFirst();
         do
@@ -29,8 +32,23 @@ public class PokeDex
         while (cursor.moveToNext());
         cursor.close();
 
-        cursor = database.rawQuery("SELECT count(*) FROM pokemon", null);
+        previous_evolution = new HashMap<>();
+        cursor = database.rawQuery("SELECT id, evolution FROM pokemon", null);
         cursor.moveToFirst();
+        do
+        {
+            int id = cursor.getInt(0);
+            String evolution_string = cursor.getString(1);
+            if (evolution_string != null)
+            {
+                for (String evolution_id : evolution_string.split(","))
+                {
+                    int evolution = Integer.parseInt(evolution_id);
+                    previous_evolution.put(evolution, id);
+                }
+            }
+        }
+        while (cursor.moveToNext());
         cursor.close();
     }
     public static void init(Context context)
@@ -78,6 +96,21 @@ public class PokeDex
 
             int id = evolutions.get(0);
             return new Pokemon(id);
+        }
+
+        public Pokemon getBasicForm()
+        {
+            Pokemon pokemon = this;
+            while (!pokemon.is_basic)
+            {
+                Integer id = PokeDex.Instance.previous_evolution.get(pokemon.id);
+                if (id == null)
+                {
+                    break;
+                }
+                pokemon = new Pokemon(id);
+            }
+            return pokemon;
         }
     }
 

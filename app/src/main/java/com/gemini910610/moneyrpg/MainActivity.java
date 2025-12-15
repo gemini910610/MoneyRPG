@@ -1,6 +1,7 @@
 package com.gemini910610.moneyrpg;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -29,6 +30,8 @@ public class MainActivity extends AppCompatActivity
     private TextView exp_text, coin_text;
     private ImageView pokemon_image;
     private BoostDialog boost_dialog;
+
+    private Typeface message_font;
 
     private final ActivityResultLauncher<Intent> wallet_launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         Intent intent = result.getData();
@@ -87,6 +90,8 @@ public class MainActivity extends AppCompatActivity
         RadarChart radar_chart = findViewById(R.id.radar_chart);
         pokemon_image = findViewById(R.id.pokemon_image);
 
+        message_font = getResources().getFont(R.font.pixel);
+
         Map<String, Integer> max_value = Map.of(
                 "STR", 100,
                 "DEX", 50,
@@ -118,7 +123,7 @@ public class MainActivity extends AppCompatActivity
 
         radar_chart.update();
 
-        boost_dialog = new BoostDialog(this, max_value, radar_chart::update, this::boostAbility, this::restart);
+        boost_dialog = new BoostDialog(this, max_value, radar_chart::update, this::boostAbility, this::recreate);
     }
 
     private void setExpText()
@@ -164,17 +169,10 @@ public class MainActivity extends AppCompatActivity
 
         View view = snackbar.getView();
         TextView text = view.findViewById(com.google.android.material.R.id.snackbar_text);
-        text.setTypeface(getResources().getFont(R.font.pixel));
+        text.setTypeface(message_font);
         text.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         snackbar.show();
-    }
-
-    public void restart()
-    {
-        Intent intent = new Intent(this, MainActivity.class);
-        finish();
-        startActivity(intent);
     }
 
     public void gotoBattle(View view)

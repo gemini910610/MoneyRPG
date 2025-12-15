@@ -129,13 +129,7 @@ public class Player
 
     public static void gotchaPokemon(PokeDex.Pokemon pokemon)
     {
-        int id = pokemon.id;
-
-        // if pokemon is not basic pokemon, get its basic pokemon
-        while (!PokeDex.getBasicPokemons().contains(id))
-        {
-            id--;
-        }
+        int id = pokemon.getBasicForm().id;
 
         if (!Instance.pokemon_box.contains(id))
         {
